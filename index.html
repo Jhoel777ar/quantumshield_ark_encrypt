@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuantumShield Benchmark Ultra Completo</title>
+  <title>QuantumShield Benchmark Ultra Completo - Standard & PRO</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
@@ -211,6 +211,16 @@
       border-color: #00d4ff;
     }
 
+    .lib-checkbox.pro-mode {
+      background: rgba(255, 170, 0, 0.15);
+      border-color: rgba(255, 170, 0, 0.4);
+    }
+
+    .lib-checkbox.pro-mode.checked {
+      background: rgba(255, 170, 0, 0.3);
+      border-color: #ffaa00;
+    }
+
     .results-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -239,6 +249,10 @@
       background: linear-gradient(90deg, #00d4ff, #7b2ff7);
     }
 
+    .result-card.pro-mode::before {
+      background: linear-gradient(90deg, #ffaa00, #ff6b00);
+    }
+
     .result-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
@@ -251,6 +265,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    .result-card.pro-mode h3 {
+      color: #ffaa00;
     }
 
     .metric {
@@ -415,14 +433,16 @@
       color: #000;
     }
 
-    .badge.secure {
-      background: #7b2ff7;
-      color: #fff;
+    .badge.pro {
+      background: #ffaa00;
+      color: #000;
+      box-shadow: 0 0 10px #ffaa00;
     }
 
-    .badge.insecure {
-      background: #ff006e;
-      color: #fff;
+    .badge.standard {
+      background: #00d4ff;
+      color: #000;
+      box-shadow: 0 0 10px #00d4ff;
     }
 
     .security-badge {
@@ -508,10 +528,10 @@
   <div class="container">
     <header>
       <h1>⚡ QUANTUMSHIELD ULTRA BENCHMARK</h1>
-      <p class="subtitle">Análisis Completo de Rendimiento vs. 8+ Librerías Modernas</p>
+      <p class="subtitle">Análisis Completo: Standard vs PRO vs 8+ Librerías Modernas</p>
       <div class="stats-bar">
         <div class="stat-item">
-          <span id="totalLibs">9</span> Librerías
+          <span id="totalLibs">10</span> Métodos
         </div>
         <div class="stat-item">
           <span id="totalTests">0</span> Tests Ejecutados
@@ -557,11 +577,15 @@
       </div>
 
       <div style="margin-top: 25px;">
-        <label style="font-size: 1.1em; margin-bottom: 15px; display: block;">🔐 Selecciona las librerías a comparar:</label>
+        <label style="font-size: 1.1em; margin-bottom: 15px; display: block;">🔐 Selecciona los métodos a comparar:</label>
         <div class="library-selector">
           <label class="lib-checkbox checked">
-            <input type="checkbox" checked data-lib="quantumshield">
-            <span>QuantumShield 🛡️</span>
+            <input type="checkbox" checked data-lib="quantumshield-standard">
+            <span>⚡ QuantumShield Standard</span>
+          </label>
+          <label class="lib-checkbox pro-mode checked">
+            <input type="checkbox" checked data-lib="quantumshield-pro">
+            <span>🛡️ QuantumShield PRO</span>
           </label>
           <label class="lib-checkbox checked">
             <input type="checkbox" checked data-lib="aes-gcm">
@@ -611,10 +635,10 @@
   </div>
 
   <script type="module">
-    import init, { wasm_generate_keypair, wasm_encrypt, wasm_decrypt } from 'https://cdn.jsdelivr.net/npm/quantumshield_ark_bidirectional@latest/quantumshield.js';
+    import init, { wasm_generate_keypair, wasm_encrypt, wasm_encrypt_pro, wasm_decrypt } from './node_modules/quantumshield_ark_bidirectional/quantumshield.js';
 
     let wasmReady = false;
-    let selectedLibs = new Set(['quantumshield', 'aes-gcm', 'cryptojs-aes', 'tweetnacl', 'elliptic', 'forge-rsa', 'cryptojs-3des', 'cryptojs-rabbit', 'base64']);
+    let selectedLibs = new Set(['quantumshield-standard', 'quantumshield-pro', 'aes-gcm', 'cryptojs-aes', 'tweetnacl', 'elliptic', 'forge-rsa', 'cryptojs-3des', 'cryptojs-rabbit', 'base64']);
 
     // Manejo de checkboxes
     document.querySelectorAll('.lib-checkbox input').forEach(cb => {
@@ -638,7 +662,7 @@
       try {
         await init();
         wasmReady = true;
-        showStatus('✅ QuantumShield WASM cargado correctamente', 'success');
+        showStatus('✅ QuantumShield WASM cargado correctamente - Modos Standard & PRO disponibles', 'success');
       } catch (e) {
         showStatus('❌ Error al cargar WASM: ' + e.message, 'error');
       }
@@ -678,14 +702,14 @@
       return Math.sqrt(average(squareDiffs));
     }
 
-    // QuantumShield
-    async function benchmarkQuantumShield(text, iterations) {
+    // QuantumShield Standard Mode
+    async function benchmarkQuantumShieldStandard(text, iterations) {
       const keypair = wasm_generate_keypair();
       const x25519_pub = new Uint8Array(keypair.x25519_pub);
       const x25519_sec = new Uint8Array(keypair.x25519_sec);
       const ed25519_pub = new Uint8Array(keypair.ed25519_pub);
       const ed25519_sec = new Uint8Array(keypair.ed25519_sec);
-      const seed = new TextEncoder().encode('benchmark_seed_2024');
+      const seed = new TextEncoder().encode('benchmark_standard_2024');
 
       const encryptTimes = [];
       const decryptTimes = [];
@@ -701,7 +725,7 @@
       }
 
       return {
-        name: 'QuantumShield',
+        name: 'QuantumShield Standard',
         lib: 'Rust WASM + X25519 + Ed25519',
         avgEncrypt: average(encryptTimes),
         avgDecrypt: average(decryptTimes),
@@ -712,7 +736,47 @@
         totalTime: sum(encryptTimes) + sum(decryptTimes),
         security: '🛡️ Post-Quantum (8192 rondas)',
         auth: '✅',
-        quantum: '✅'
+        quantum: '✅',
+        mode: 'standard'
+      };
+    }
+
+    // QuantumShield PRO Mode
+    async function benchmarkQuantumShieldPro(text, iterations) {
+      const keypair = wasm_generate_keypair();
+      const x25519_pub = new Uint8Array(keypair.x25519_pub);
+      const x25519_sec = new Uint8Array(keypair.x25519_sec);
+      const ed25519_pub = new Uint8Array(keypair.ed25519_pub);
+      const ed25519_sec = new Uint8Array(keypair.ed25519_sec);
+      const seed = new TextEncoder().encode('benchmark_pro_2024');
+
+      const encryptTimes = [];
+      const decryptTimes = [];
+
+      for (let i = 0; i < iterations; i++) {
+        const encStart = performance.now();
+        const encrypted = wasm_encrypt_pro(text, x25519_pub, ed25519_sec, seed);
+        encryptTimes.push(performance.now() - encStart);
+
+        const decStart = performance.now();
+        wasm_decrypt(encrypted, x25519_sec, ed25519_pub);
+        decryptTimes.push(performance.now() - decStart);
+      }
+
+      return {
+        name: 'QuantumShield PRO',
+        lib: 'Military Grade + Advanced Layers',
+        avgEncrypt: average(encryptTimes),
+        avgDecrypt: average(decryptTimes),
+        medianEncrypt: median(encryptTimes),
+        medianDecrypt: median(decryptTimes),
+        stdDevEncrypt: stdDev(encryptTimes),
+        stdDevDecrypt: stdDev(decryptTimes),
+        totalTime: sum(encryptTimes) + sum(decryptTimes),
+        security: '🛡️🛡️🛡️ Military Grade + Extra Layers',
+        auth: '✅',
+        quantum: '✅',
+        mode: 'pro'
       };
     }
 
@@ -760,7 +824,8 @@
         totalTime: sum(encryptTimes) + sum(decryptTimes),
         security: '🔒 AES-256-GCM',
         auth: '✅',
-        quantum: '❌'
+        quantum: '❌',
+        mode: 'other'
       };
     }
 
@@ -792,7 +857,8 @@
         totalTime: sum(encryptTimes) + sum(decryptTimes),
         security: '🔒 AES-256-CBC',
         auth: '❌',
-        quantum: '❌'
+        quantum: '❌',
+        mode: 'other'
       };
     }
 
@@ -829,7 +895,8 @@
           totalTime: sum(encryptTimes) + sum(decryptTimes),
           security: '🔒 X25519 + Poly1305',
           auth: '✅',
-          quantum: '❌'
+          quantum: '❌',
+          mode: 'other'
         };
       } catch (e) {
         console.error('TweetNaCl error:', e);
@@ -871,7 +938,8 @@
           totalTime: sum(encryptTimes) + sum(decryptTimes),
           security: '🔒 ECDH secp256k1',
           auth: '❌',
-          quantum: '❌'
+          quantum: '❌',
+          mode: 'other'
         };
       } catch (e) {
         console.error('Elliptic error:', e);
@@ -882,8 +950,7 @@
     // Forge RSA
     function benchmarkForgeRSA(text, iterations) {
       try {
-        // Para textos grandes, RSA solo puede encriptar bloques pequeños
-        const maxLength = 190; // RSA-2048 límite
+        const maxLength = 190;
         const textToEncrypt = text.length > maxLength ? text.substring(0, maxLength) : text;
         
         const keypair = forge.pki.rsa.generateKeyPair(2048);
@@ -912,7 +979,8 @@
           totalTime: sum(encryptTimes) + sum(decryptTimes),
           security: '🔒 RSA-2048-OAEP',
           auth: '✅',
-          quantum: '❌'
+          quantum: '❌',
+          mode: 'other'
         };
       } catch (e) {
         console.error('Forge RSA error:', e);
@@ -948,7 +1016,8 @@
         totalTime: sum(encryptTimes) + sum(decryptTimes),
         security: '⚠️ 3DES (Legacy)',
         auth: '❌',
-        quantum: '❌'
+        quantum: '❌',
+        mode: 'other'
       };
     }
 
@@ -980,7 +1049,8 @@
         totalTime: sum(encryptTimes) + sum(decryptTimes),
         security: '🔒 Rabbit Stream Cipher',
         auth: '❌',
-        quantum: '❌'
+        quantum: '❌',
+        mode: 'other'
       };
     }
 
@@ -1011,7 +1081,8 @@
         totalTime: sum(encryptTimes) + sum(decryptTimes),
         security: '❌ Sin Encriptación',
         auth: '❌',
-        quantum: '❌'
+        quantum: '❌',
+        mode: 'other'
       };
     }
 
@@ -1021,6 +1092,14 @@
       const slowest = [...results].sort((a, b) => b.totalTime - a.totalTime)[0];
       const avgTotal = average(results.map(r => r.totalTime));
       const quantumCount = results.filter(r => r.quantum === '✅').length;
+      
+      const qsStandard = results.find(r => r.mode === 'standard');
+      const qsPro = results.find(r => r.mode === 'pro');
+      let comparison = '';
+      if (qsStandard && qsPro) {
+        const diff = ((qsPro.totalTime - qsStandard.totalTime) / qsStandard.totalTime * 100).toFixed(1);
+        comparison = `<p style="color: #ffaa00; margin-top: 10px;">PRO es ${diff}% más lento pero con máxima seguridad</p>`;
+      }
 
       summaryDiv.innerHTML = `
         <div class="summary-cards">
@@ -1037,12 +1116,13 @@
           <div class="summary-card">
             <h4>📊 Promedio</h4>
             <div class="value">${avgTotal.toFixed(2)}ms</div>
-            <p style="color: #aaa; margin-top: 10px;">Entre todas las librerías</p>
+            <p style="color: #aaa; margin-top: 10px;">Entre todos los métodos</p>
           </div>
           <div class="summary-card">
             <h4>🛡️ Post-Quantum</h4>
             <div class="value">${quantumCount}/${results.length}</div>
             <p style="color: #aaa; margin-top: 10px;">Con resistencia cuántica</p>
+            ${comparison}
           </div>
         </div>
       `;
@@ -1060,14 +1140,17 @@
         const rank = sorted.findIndex(r => r.name === result.name) + 1;
         const rankClass = rank === 1 ? 'winner' : rank === 2 ? 'second' : rank === 3 ? 'third' : '';
         const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+        const modeClass = result.mode === 'pro' ? 'pro-mode' : '';
         
         html += `
-          <div class="result-card ${rankClass}">
+          <div class="result-card ${rankClass} ${modeClass}">
             <h3>
               <span>${result.name}</span>
               <span style="font-size: 1.5em;">${medal}</span>
             </h3>
             <div class="lib-info">${result.lib}</div>
+            ${result.mode === 'pro' ? '<span class="badge pro" style="margin-top: 10px; display: inline-block;">MILITARY GRADE</span>' : ''}
+            ${result.mode === 'standard' ? '<span class="badge standard" style="margin-top: 10px; display: inline-block;">FAST MODE</span>' : ''}
             <div style="margin: 15px 0;">
               <div class="metric">
                 <span class="metric-label">Encriptación Media:</span>
@@ -1091,7 +1174,7 @@
               </div>
               <div class="metric">
                 <span class="metric-label">Tiempo Total:</span>
-                <span class="metric-value" style="color: #00d4ff;">${result.totalTime.toFixed(2)} ms</span>
+                <span class="metric-value" style="color: ${result.mode === 'pro' ? '#ffaa00' : '#00d4ff'};">${result.totalTime.toFixed(2)} ms</span>
               </div>
               <div class="metric">
                 <span class="metric-label">Seguridad:</span>
@@ -1112,7 +1195,6 @@
       
       html += '</div>';
 
-      // Tabla comparativa expandida
       html += `
         <div class="chart-container">
           <h3 style="margin-bottom: 25px; font-size: 1.8em;">📊 Tabla Comparativa Completa</h3>
@@ -1122,9 +1204,10 @@
                 <tr>
                   <th>Ranking</th>
                   <th>Método</th>
+                  <th>Modo</th>
                   <th>Librería</th>
-                  <th>Encriptación (ms)</th>
-                  <th>Desencriptación (ms)</th>
+                  <th>Encript. (ms)</th>
+                  <th>Descrypt. (ms)</th>
                   <th>Total (ms)</th>
                   <th>Desv. Est.</th>
                   <th>Velocidad</th>
@@ -1137,10 +1220,13 @@
                   const speedBadge = idx === 0 ? '<span class="badge fastest">Más Rápido</span>' : 
                                     idx === sorted.length - 1 ? '<span class="badge slowest">Más Lento</span>' : 
                                     '<span class="badge medium">Medio</span>';
+                  const modeBadge = r.mode === 'pro' ? '<span class="badge pro">PRO</span>' : 
+                                   r.mode === 'standard' ? '<span class="badge standard">STD</span>' : '-';
                   return `
                     <tr>
                       <td><strong>${idx + 1}</strong></td>
                       <td><strong>${r.name}</strong></td>
+                      <td>${modeBadge}</td>
                       <td style="font-size: 0.85em; color: #aaa;">${r.lib}</td>
                       <td>${r.avgEncrypt.toFixed(3)}</td>
                       <td>${r.avgDecrypt.toFixed(3)}</td>
@@ -1196,12 +1282,12 @@
         </div>
       `;
 
-      const colors = [
-        '#00d4ff', '#7b2ff7', '#ff006e', '#ffaa00', '#00ff00',
-        '#ff0000', '#00ffff', '#ff00ff', '#ffff00'
-      ];
+      const colors = results.map(r => {
+        if (r.mode === 'standard') return '#00d4ff';
+        if (r.mode === 'pro') return '#ffaa00';
+        return ['#7b2ff7', '#ff006e', '#00ff00', '#ff0000', '#00ffff', '#ff00ff', '#ffff00', '#ffffff'][Math.floor(Math.random() * 8)];
+      });
 
-      // Gráfico 1: Rendimiento total
       const ctx1 = document.getElementById('performanceChart').getContext('2d');
       new Chart(ctx1, {
         type: 'bar',
@@ -1210,8 +1296,16 @@
           datasets: [{
             label: 'Tiempo Total (ms)',
             data: sorted.map(r => r.totalTime),
-            backgroundColor: colors.map(c => c + '99'),
-            borderColor: colors,
+            backgroundColor: sorted.map(r => {
+              if (r.mode === 'standard') return '#00d4ff99';
+              if (r.mode === 'pro') return '#ffaa0099';
+              return 'rgba(123, 47, 247, 0.6)';
+            }),
+            borderColor: sorted.map(r => {
+              if (r.mode === 'standard') return '#00d4ff';
+              if (r.mode === 'pro') return '#ffaa00';
+              return '#7b2ff7';
+            }),
             borderWidth: 3
           }]
         },
@@ -1222,7 +1316,7 @@
             legend: { display: false },
             title: {
               display: true,
-              text: 'Menor tiempo = Mejor rendimiento',
+              text: 'Menor tiempo = Mejor rendimiento | 🛡️ PRO = Máxima seguridad',
               color: '#aaa',
               font: { size: 14 }
             }
@@ -1246,7 +1340,6 @@
         }
       });
 
-      // Gráfico 2: Encriptación vs Desencriptación
       const ctx2 = document.getElementById('operationChart').getContext('2d');
       new Chart(ctx2, {
         type: 'bar',
@@ -1296,7 +1389,6 @@
         }
       });
 
-      // Gráfico 3: Medianas
       const ctx3 = document.getElementById('medianChart').getContext('2d');
       new Chart(ctx3, {
         type: 'line',
@@ -1345,7 +1437,6 @@
         }
       });
 
-      // Gráfico 4: Desviación estándar
       const ctx4 = document.getElementById('stdDevChart').getContext('2d');
       new Chart(ctx4, {
         type: 'radar',
@@ -1384,13 +1475,13 @@
     }
 
     document.getElementById('runBenchmark').addEventListener('click', async () => {
-      if (!wasmReady && selectedLibs.has('quantumshield')) {
+      if (!wasmReady && (selectedLibs.has('quantumshield-standard') || selectedLibs.has('quantumshield-pro'))) {
         showStatus('❌ Esperando que QuantumShield WASM se cargue...', 'error');
         return;
       }
 
       if (selectedLibs.size === 0) {
-        showStatus('❌ Selecciona al menos una librería para comparar', 'error');
+        showStatus('❌ Selecciona al menos un método para comparar', 'error');
         return;
       }
 
@@ -1410,7 +1501,7 @@
         <div class="loading">
           <div class="spinner"></div>
           <p>Ejecutando ${iterations} iteraciones con ${(size / 1024).toFixed(2)} KB de datos...</p>
-          <p>Probando ${selectedLibs.size} librerías de encriptación 🔐</p>
+          <p>Probando ${selectedLibs.size} métodos de encriptación 🔐</p>
           <div class="progress-bar">
             <div class="progress-fill" id="progressBar"></div>
           </div>
@@ -1431,8 +1522,11 @@
           let result;
           try {
             switch(lib) {
-              case 'quantumshield':
-                result = await benchmarkQuantumShield(text, iterations);
+              case 'quantumshield-standard':
+                result = await benchmarkQuantumShieldStandard(text, iterations);
+                break;
+              case 'quantumshield-pro':
+                result = await benchmarkQuantumShieldPro(text, iterations);
                 break;
               case 'aes-gcm':
                 result = await benchmarkAESGCM(text, iterations);
@@ -1463,7 +1557,6 @@
             if (result) results.push(result);
           } catch (err) {
             console.error(`Error en ${lib}:`, err);
-            // Continuar con la siguiente librería
           }
         }
 
@@ -1471,6 +1564,8 @@
 
         if (results.length === 0) {
           showStatus('❌ No se pudieron ejecutar los benchmarks. Verifica la consola para más detalles.', 'error');
+          btn.disabled = false;
+          btn.textContent = '🚀 Ejecutar Benchmark Completo';
           return;
         }
 
